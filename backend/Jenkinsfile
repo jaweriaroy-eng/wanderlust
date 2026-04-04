@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/jaweriaroy-eng/wanderlust.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t wanderlust-backend ./backend'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                docker stop wanderlust-container || true
+                docker rm wanderlust-container || true
+                docker run -d -p 5000:5000 \
+                --add-host=host.docker.internal:host-gateway \
+                -e MONGODB_URI="mongodb://host.docker.internal:27017/wanderlust" \
+                --name wanderlust-container \
+                wanderlust-backend
+                '''
+            }
+        }
+    }
+}
