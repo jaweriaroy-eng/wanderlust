@@ -2,19 +2,28 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/jaweriaroy-eng/wanderlust.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Frontend Setup') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build') {
             steps {
                 sh 'docker build -t wanderlust-backend ./backend'
             }
         }
 
-        stage('Run Container') {
+        stage('Deploy') {
             steps {
                 sh '''
                 docker stop wanderlust-container || true
